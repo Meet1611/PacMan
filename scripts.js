@@ -2,6 +2,8 @@ const canvas = document.querySelector("canvas");
 
 const ctx = canvas.getContext("2d");
 
+const scoreEle = document.querySelector("#score");
+
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
@@ -51,15 +53,22 @@ class Pacman {
   }
 }
 
-// const map = [
-//   ["1", "-", "-", "-", "-", "-", "2"],
-//   ["|", " ", " ", " ", " ", " ", "|"],
-//   ["|", " ", "0", " ", "0", " ", "|"],
-//   ["|", " ", " ", " ", " ", " ", "|"],
-//   ["|", " ", "0", " ", "0", " ", "|"],
-//   ["|", " ", " ", " ", " ", " ", "|"],
-//   ["4", "-", "-", "-", "-", "-", "3"],
-// ];
+class Pellet {
+  constructor({ position }) {
+    this.position = position;
+    this.radius = 3;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+const pellets = []
 
 const map = [
   ["1", "-", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
@@ -73,7 +82,7 @@ const map = [
   ["|", ".", "[", "]", ".", ".", ".", "[", "]", ".", "|"],
   ["|", ".", ".", ".", ".", "^", ".", ".", ".", ".", "|"],
   ["|", ".", "b", ".", "[", "5", "]", ".", "b", ".", "|"],
-  ["|", ".", ".", ".", ".", ".", ".", ".", ".", "p", "|"],
+  ["|", ".", ".", ".", ".", ".", ".", ".", ".", ".", "|"],
   ["4", "-", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
 ];
 
@@ -117,6 +126,7 @@ const keys = {
 };
 
 let lastkey = "";
+let score = 0;
 
 function createImage(src) {
   const image = new Image();
@@ -306,16 +316,16 @@ map.forEach((row, i) => {
           })
         );
         break;
-      // case ".":
-      //   pellets.push(
-      //     new Pellet({
-      //       position: {
-      //         x: j * Boundary.width + Boundary.width / 2,
-      //         y: i * Boundary.height + Boundary.height / 2,
-      //       },
-      //     })
-      //   );
-      //   break;
+      case ".":
+        pellets.push(
+          new Pellet({
+            position: {
+              x: j * Boundary.width + Boundary.width / 2,
+              y: i * Boundary.height + Boundary.height / 2,
+            },
+          })
+        );
+        break;
     }
   });
 });
@@ -436,6 +446,16 @@ function animate() {
       }
     }
   }
+
+  for(let i = pellets.length - 1; i > 0; i--) {
+    const pellet = pellets[i];
+    pellet.draw();
+
+    if(Math.hypot(pellet.position.x - player.position.x, pellet.position.y - player.position.y) < pellet.radius + player.radius) {
+      pellets.splice(i, 1);
+      score += 10;
+    }
+}
 
   boundaries.forEach((boundary) => {
     boundary.draw();
